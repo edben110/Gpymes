@@ -6,9 +6,12 @@ import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
@@ -24,6 +27,10 @@ public class Gasto {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "pyme_id", nullable = false)
+    private Pyme pyme;
+
     @Column(name = "monto_total", nullable = false)
     private Double montoTotal;
 
@@ -37,19 +44,23 @@ public class Gasto {
     protected Gasto() {
     }
 
-    public Gasto(Double montoTotal, LocalDateTime fechaPago, CategoriasGasto categoria) {
+    public Gasto(Double montoTotal, LocalDateTime fechaPago, CategoriasGasto categoria, Pyme pyme) {
         if (montoTotal == null || montoTotal < 0) {
             throw new IllegalArgumentException("El monto total no es valido, es nulo o negativo");
         } else if (categoria == null) {
             throw new IllegalArgumentException("La categoria no es valida, es nula");
+        } else if (pyme == null) {
+            throw new IllegalArgumentException("El gasto debe pertenecer a una pyme");
         }
         this.id = UUID.randomUUID();
         this.montoTotal = montoTotal;
         this.fechaPago = fechaPago == null ? LocalDateTime.now() : fechaPago;
         this.categoria = categoria;
+        this.pyme = pyme;
     }
 
     public UUID getId() {return this.id;}
+    public Pyme getPyme() {return this.pyme;}
     public Double getMontoTotal() {return this.montoTotal;}
     public LocalDateTime getFechaPago() {return this.fechaPago;}
     public CategoriasGasto getCategoria() {return this.categoria;}

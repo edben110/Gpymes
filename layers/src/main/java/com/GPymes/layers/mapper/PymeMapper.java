@@ -27,4 +27,8 @@ public class PymeMapper {
                 : pyme.getEmpleados().stream().map(empleadoMapper::toResponse).toList();
         return new PymeResponseDTO(pyme.getId(), pyme.getNombre(), pyme.getGanancias(), empleados);
     }
+
+    public List<PymeResponseDTO> toResponseList(List<Pyme> pymes) {
+        return pymes.stream().map(this::toResponse).toList();
+    }
 }

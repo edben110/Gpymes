@@ -5,6 +5,8 @@ import com.GPymes.layers.dto.EmpleadoRequestDTO;
 import com.GPymes.layers.dto.EmpleadoResponseDTO;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class EmpleadoMapper {
 
@@ -21,5 +23,9 @@ public class EmpleadoMapper {
                 empleado.getHorasExtra(),
                 empleado.getEstado() == null ? null : empleado.getEstado().getClass().getSimpleName()
         );
+    }
+
+    public List<EmpleadoResponseDTO> toResponseList(List<Empleado> empleados) {
+        return empleados.stream().map(this::toResponse).toList();
     }
 }

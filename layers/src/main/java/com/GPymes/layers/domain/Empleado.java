@@ -10,6 +10,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -40,6 +42,10 @@ public class Empleado {
 
     @Column(name = "horas_extra", nullable = false)
     private Integer horasExtra;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "pyme_id", nullable = false)
+    private Pyme pyme;
 
     @Column(name = "estado", nullable = false, length = 30)
     private String estadoNombre;
@@ -95,6 +101,14 @@ public class Empleado {
 
     public List<Nomina> getNominas() {
         return this.historialNominas;
+    }
+
+    public Pyme getPyme() {
+        return this.pyme;
+    }
+
+    public void setPyme(Pyme pyme) {
+        this.pyme = pyme;
     }
 
     public EstadoEmpleado getEstado() {

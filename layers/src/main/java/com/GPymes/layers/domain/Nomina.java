@@ -22,13 +22,16 @@ public class Nomina extends Gasto {
     }
 
     public Nomina(Double montoTotal, LocalDateTime fechaPago, Empleado empleado, Double deducciones) {
-        super(montoTotal, fechaPago, CategoriasGasto.NOMINA);
+        super(montoTotal, fechaPago, CategoriasGasto.NOMINA, pymeDe(empleado));
+        this.empleado = empleado;
+        this.deducciones = deducciones == null ? 0.0 : deducciones;
+    }
+
+    private static Pyme pymeDe(Empleado empleado) {
         if (empleado == null) {
             throw new IllegalArgumentException("El empleado de la nomina no puede ser nulo");
         }
-        this.empleado = empleado;
-        this.deducciones = deducciones == null ? 0.0 : deducciones;
-        empleado.getNominas().add(this);
+        return empleado.getPyme();
     }
 
     public Empleado getEmpleado() {return this.empleado;}

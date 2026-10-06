@@ -5,7 +5,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -21,15 +20,17 @@ public class Pyme {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "nombre", nullable = false, length = 120)
+    @Column(name = "nombre", nullable = false, unique = true, length = 120)
     private String nombre;
 
     @Column(name = "ganancias")
     private Double ganancias;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "pyme_id")
+    @OneToMany(mappedBy = "pyme", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Empleado> empleados = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pyme", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Gasto> gastos = new ArrayList<>();
 
     protected Pyme() {
     }
@@ -48,6 +49,10 @@ public class Pyme {
 
     public List<Empleado> getEmpleados() {
         return this.empleados;
+    }
+
+    public List<Gasto> getGastos() {
+        return this.gastos;
     }
 
     public Double getGanancias() {

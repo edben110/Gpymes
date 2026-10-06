@@ -1,5 +1,6 @@
 package com.GPymes.layers.domain;
 
+import com.GPymes.layers.domain.EmpleadoState.EstadoDespedido;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -24,7 +25,8 @@ public class Nomina extends Gasto {
     public Nomina(Double montoTotal, LocalDateTime fechaPago, Empleado empleado, Double deducciones) {
         super(montoTotal, fechaPago, CategoriasGasto.NOMINA, pymeDe(empleado));
         this.empleado = empleado;
-        this.deducciones = deducciones == null ? 0.0 : deducciones;
+        this.deducciones = validarDeducciones(deducciones);
+        validarEmpleadoNoDespedido(empleado);
     }
 
     private static Pyme pymeDe(Empleado empleado) {
@@ -34,9 +36,25 @@ public class Nomina extends Gasto {
         return empleado.getPyme();
     }
 
+    private static Double validarDeducciones(Double deducciones) {
+        if (deducciones != null && deducciones < 0) {
+            throw new IllegalArgumentException("Las deducciones no pueden ser negativas: " + deducciones);
+        }
+        return deducciones == null ? 0.0 : deducciones;
+    }
+
+    private static void validarEmpleadoNoDespedido(Empleado empleado) {
+        if (empleado.getEstado() instanceof EstadoDespedido) {
+            throw new IllegalArgumentException(
+                    "No se puede crear una nomina para un empleado despedido (ID: " + empleado.getId() + ")");
+        }
+    }
+
     public Empleado getEmpleado() {return this.empleado;}
 
     public Double getDeducciones() {return this.deducciones;}
 
-    public void setDeducciones(Double deducciones) {this.deducciones = deducciones;}
+    public void setDeducciones(Double deducciones) {
+        this.deducciones = validarDeducciones(deducciones);
+    }
 }

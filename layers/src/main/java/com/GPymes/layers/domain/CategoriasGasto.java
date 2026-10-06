@@ -1,4 +1,5 @@
-package main.java.com.GPymes.layers.domain;
+package com.GPymes.layers.domain;
+
 public enum CategoriasGasto {
     NOMINA,
     ARRIENDO,

@@ -1,13 +1,13 @@
 package com.GPymes.layers.repository;
 
-import com.GPymes.layers.domain.Pyme;
+import com.GPymes.layers.domain.Empleado;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface RepositorioPyme extends JpaRepository<Pyme, UUID> {
-    Optional<Pyme> findByNombre(String nombre);
+public interface RepositorioEmpleado extends JpaRepository<Empleado, UUID> {
+    List<Empleado> findByPymeId(UUID pymeId);
 }

@@ -1,0 +1,574 @@
+{
+  "info": {
+    "name": "GPymes",
+    "description": "Pruebas manuales del backend GPymes. Ejecutar las carpetas en orden (1 a 5). Los ids se guardan solos en las variables de coleccion. Ver GUIA_PRUEBAS.md.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "pymeId", "value": "" },
+    { "key": "empleadoId", "value": "" },
+    { "key": "gastoId", "value": "" },
+    { "key": "nominaId", "value": "" },
+    { "key": "idInexistente", "value": "00000000-0000-0000-0000-000000000000" }
+  ],
+  "item": [
+    {
+      "name": "1. Crear datos",
+      "item": [
+        {
+          "name": "01 Crear pyme",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('201 Created', () => pm.response.to.have.status(201));",
+            "const j = pm.response.json();",
+            "pm.collectionVariables.set('pymeId', j.id);",
+            "pm.test('ganancias = 5000', () => pm.expect(j.ganancias).to.eql(5000));",
+            "pm.test('totalGastos = 0', () => pm.expect(j.totalGastos).to.eql(0));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Panaderia\",\n  \"ganancias\": 5000\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/pymes"
+          }
+        },
+        {
+          "name": "02 Crear empleado",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('201 Created', () => pm.response.to.have.status(201));",
+            "const j = pm.response.json();",
+            "pm.collectionVariables.set('empleadoId', j.id);",
+            "pm.test('estado inicial EstadoLaborando', () => pm.expect(j.estado).to.eql('EstadoLaborando'));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Ana Torres\",\n  \"documento\": 1012345678,\n  \"salarioBase\": 1500,\n  \"pymeId\": \"{{pymeId}}\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/empleados"
+          }
+        },
+        {
+          "name": "03 Crear gasto (ARRIENDO)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('201 Created', () => pm.response.to.have.status(201));",
+            "const j = pm.response.json();",
+            "pm.collectionVariables.set('gastoId', j.id);",
+            "pm.test('categoria ARRIENDO', () => pm.expect(j.categoria).to.eql('ARRIENDO'));",
+            "pm.test('empleadoId null', () => pm.expect(j.empleadoId).to.eql(null));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"pymeId\": \"{{pymeId}}\",\n  \"montoTotal\": 1200,\n  \"categoria\": \"ARRIENDO\",\n  \"fechaPago\": \"2026-10-01T09:00:00\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/gastos"
+          }
+        },
+        {
+          "name": "04 Crear nomina",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('201 Created', () => pm.response.to.have.status(201));",
+            "const j = pm.response.json();",
+            "pm.collectionVariables.set('nominaId', j.id);",
+            "pm.test('categoria NOMINA', () => pm.expect(j.categoria).to.eql('NOMINA'));",
+            "pm.test('deducciones = 120', () => pm.expect(j.deducciones).to.eql(120));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"empleadoId\": \"{{empleadoId}}\",\n  \"montoTotal\": 1500,\n  \"deducciones\": 120,\n  \"fechaPago\": \"2026-10-05T18:00:00\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/nominas"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Consultas",
+      "item": [
+        {
+          "name": "05 Obtener pyme por id",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const j = pm.response.json();",
+            "pm.test('totalGastos = 1200 + 1500', () => pm.expect(j.totalGastos).to.eql(2700));",
+            "pm.test('ganancias = 5000', () => pm.expect(j.ganancias).to.eql(5000));",
+            "pm.test('1 empleado', () => pm.expect(j.empleados.length).to.eql(1));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/pymes/{{pymeId}}" }
+        },
+        {
+          "name": "06 Total de gastos de la pyme",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const j = pm.response.json();",
+            "pm.test('totalGastos = 2700', () => pm.expect(j.totalGastos).to.eql(2700));",
+            "pm.test('resumen: menor a las ganancias', () => pm.expect(j.resumen).to.include('menor a las ganancias'));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/pymes/{{pymeId}}/gastos/total" }
+        },
+        {
+          "name": "07 Listar pymes",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const ids = pm.response.json().map(p => p.id);",
+            "pm.test('contiene pymeId', () => pm.expect(ids).to.include(pm.collectionVariables.get('pymeId')));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/pymes" }
+        },
+        {
+          "name": "08 Buscar pyme por nombre",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('id = pymeId', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('pymeId')));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/pymes/buscar?nombre=Panaderia" }
+        },
+        {
+          "name": "09 Listar empleados",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const ids = pm.response.json().map(e => e.id);",
+            "pm.test('contiene empleadoId', () => pm.expect(ids).to.include(pm.collectionVariables.get('empleadoId')));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/empleados" }
+        },
+        {
+          "name": "10 Obtener empleado por id",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('nombre Ana Torres', () => pm.expect(pm.response.json().nombre).to.eql('Ana Torres'));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/empleados/{{empleadoId}}" }
+        },
+        {
+          "name": "11 Empleados por pyme",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('1 empleado', () => pm.expect(pm.response.json().length).to.eql(1));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/empleados/pyme/{{pymeId}}" }
+        },
+        {
+          "name": "12 Listar gastos (incluye nominas)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const ids = pm.response.json().map(g => g.id);",
+            "pm.test('contiene gasto y nomina', () => {",
+            "  pm.expect(ids).to.include(pm.collectionVariables.get('gastoId'));",
+            "  pm.expect(ids).to.include(pm.collectionVariables.get('nominaId'));",
+            "});"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/gastos" }
+        },
+        {
+          "name": "13 Obtener gasto por id",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const j = pm.response.json();",
+            "pm.test('ARRIENDO sin empleado', () => { pm.expect(j.categoria).to.eql('ARRIENDO'); pm.expect(j.empleadoId).to.eql(null); });"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/gastos/{{gastoId}}" }
+        },
+        {
+          "name": "14 Obtener nomina como gasto",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const j = pm.response.json();",
+            "pm.test('NOMINA con empleado', () => { pm.expect(j.categoria).to.eql('NOMINA'); pm.expect(j.empleadoId).to.eql(pm.collectionVariables.get('empleadoId')); });"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/gastos/{{nominaId}}" }
+        },
+        {
+          "name": "15 Gastos por pyme",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const lista = pm.response.json();",
+            "pm.test('2 gastos', () => pm.expect(lista.length).to.eql(2));",
+            "pm.test('suma = 2700', () => pm.expect(lista.reduce((s, g) => s + g.montoTotal, 0)).to.eql(2700));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/gastos/pyme/{{pymeId}}" }
+        },
+        {
+          "name": "16 Gastos por categoria ARRIENDO",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('todos ARRIENDO', () => pm.response.json().forEach(g => pm.expect(g.categoria).to.eql('ARRIENDO')));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/gastos/categoria/ARRIENDO" }
+        },
+        {
+          "name": "17 Gastos por categoria NOMINA",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const ids = pm.response.json().map(g => g.id);",
+            "pm.test('contiene nominaId', () => pm.expect(ids).to.include(pm.collectionVariables.get('nominaId')));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/gastos/categoria/NOMINA" }
+        },
+        {
+          "name": "18 Listar nominas",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const ids = pm.response.json().map(n => n.id);",
+            "pm.test('contiene nominaId', () => pm.expect(ids).to.include(pm.collectionVariables.get('nominaId')));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/nominas" }
+        },
+        {
+          "name": "19 Obtener nomina por id",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const j = pm.response.json();",
+            "pm.test('empleado y deducciones', () => { pm.expect(j.nombreEmpleado).to.eql('Ana Torres'); pm.expect(j.deducciones).to.eql(120); });"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/nominas/{{nominaId}}" }
+        },
+        {
+          "name": "20 Nominas por empleado",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('1 nomina', () => pm.expect(pm.response.json().length).to.eql(1));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/nominas/empleado/{{empleadoId}}" }
+        }
+      ]
+    },
+    {
+      "name": "3. Estados del empleado",
+      "item": [
+        {
+          "name": "21 Reactivar (ya laborando) - 400",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('mensaje', () => pm.expect(pm.response.json().mensaje).to.include('laborando'));"
+          ] } }],
+          "request": { "method": "PUT", "header": [], "url": "{{baseUrl}}/api/empleados/{{empleadoId}}/reactivar" }
+        },
+        {
+          "name": "22 Permiso",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('EstadoPermiso', () => pm.expect(pm.response.json().estado).to.eql('EstadoPermiso'));"
+          ] } }],
+          "request": { "method": "PUT", "header": [], "url": "{{baseUrl}}/api/empleados/{{empleadoId}}/permiso" }
+        },
+        {
+          "name": "23 Permiso otra vez - 400",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('mensaje', () => pm.expect(pm.response.json().mensaje).to.include('Permiso'));"
+          ] } }],
+          "request": { "method": "PUT", "header": [], "url": "{{baseUrl}}/api/empleados/{{empleadoId}}/permiso" }
+        },
+        {
+          "name": "24 Incapacitar",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('EstadoIncapacitado', () => pm.expect(pm.response.json().estado).to.eql('EstadoIncapacitado'));"
+          ] } }],
+          "request": { "method": "PUT", "header": [], "url": "{{baseUrl}}/api/empleados/{{empleadoId}}/incapacitar" }
+        },
+        {
+          "name": "25 Incapacitar otra vez - 400",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('mensaje', () => pm.expect(pm.response.json().mensaje).to.include('Incapacitado'));"
+          ] } }],
+          "request": { "method": "PUT", "header": [], "url": "{{baseUrl}}/api/empleados/{{empleadoId}}/incapacitar" }
+        },
+        {
+          "name": "26 Despedir",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('EstadoDespedido', () => pm.expect(pm.response.json().estado).to.eql('EstadoDespedido'));"
+          ] } }],
+          "request": { "method": "PUT", "header": [], "url": "{{baseUrl}}/api/empleados/{{empleadoId}}/despedir" }
+        },
+        {
+          "name": "27 Despedir otra vez - 400",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('mensaje', () => pm.expect(pm.response.json().mensaje).to.include('Despedido'));"
+          ] } }],
+          "request": { "method": "PUT", "header": [], "url": "{{baseUrl}}/api/empleados/{{empleadoId}}/despedir" }
+        },
+        {
+          "name": "28 Reactivar",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('EstadoLaborando', () => pm.expect(pm.response.json().estado).to.eql('EstadoLaborando'));"
+          ] } }],
+          "request": { "method": "PUT", "header": [], "url": "{{baseUrl}}/api/empleados/{{empleadoId}}/reactivar" }
+        },
+        {
+          "name": "29 Confirmar estado guardado",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('EstadoLaborando persistido', () => pm.expect(pm.response.json().estado).to.eql('EstadoLaborando'));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/empleados/{{empleadoId}}" }
+        }
+      ]
+    },
+    {
+      "name": "4. Actualizar pyme",
+      "item": [
+        {
+          "name": "30 PUT con ganancias nuevas",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const j = pm.response.json();",
+            "pm.test('ganancias = 2000', () => pm.expect(j.ganancias).to.eql(2000));",
+            "pm.test('totalGastos sigue en 2700', () => pm.expect(j.totalGastos).to.eql(2700));"
+          ] } }],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Panaderia\",\n  \"ganancias\": 2000\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/pymes/{{pymeId}}"
+          }
+        },
+        {
+          "name": "31 Total tras bajar ganancias",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('resumen: mayor o igual, ojo', () => pm.expect(pm.response.json().resumen).to.include('mayor o igual a las ganancias'));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/pymes/{{pymeId}}/gastos/total" }
+        },
+        {
+          "name": "32 PUT sin ganancias",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const j = pm.response.json();",
+            "pm.test('nombre cambiado', () => pm.expect(j.nombre).to.eql('Panaderia Central'));",
+            "pm.test('ganancias NO se borran', () => pm.expect(j.ganancias).to.eql(2000));"
+          ] } }],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Panaderia Central\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/pymes/{{pymeId}}"
+          }
+        },
+        {
+          "name": "33 Confirmar pyme actualizada",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "const j = pm.response.json();",
+            "pm.test('nombre, ganancias y total', () => { pm.expect(j.nombre).to.eql('Panaderia Central'); pm.expect(j.ganancias).to.eql(2000); pm.expect(j.totalGastos).to.eql(2700); });"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/pymes/{{pymeId}}" }
+        }
+      ]
+    },
+    {
+      "name": "5. Errores",
+      "item": [
+        {
+          "name": "34 Pyme con nombre repetido - 409",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('409 Conflict', () => pm.response.to.have.status(409));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Panaderia Central\",\n  \"ganancias\": 100\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/pymes"
+          }
+        },
+        {
+          "name": "35 Empleado con documento repetido - 409",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('409 Conflict', () => pm.response.to.have.status(409));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Otro\",\n  \"documento\": 1012345678,\n  \"salarioBase\": 1000,\n  \"pymeId\": \"{{pymeId}}\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/empleados"
+          }
+        },
+        {
+          "name": "36 Pyme inexistente - 404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('404 Not Found', () => pm.response.to.have.status(404));",
+            "pm.test('mensaje', () => pm.expect(pm.response.json().mensaje).to.include('Pyme no encontrada'));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/pymes/{{idInexistente}}" }
+        },
+        {
+          "name": "37 Empleado inexistente - 404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('404 Not Found', () => pm.response.to.have.status(404));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/empleados/{{idInexistente}}" }
+        },
+        {
+          "name": "38 Gasto inexistente - 404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('404 Not Found', () => pm.response.to.have.status(404));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/gastos/{{idInexistente}}" }
+        },
+        {
+          "name": "39 Nomina inexistente - 404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('404 Not Found', () => pm.response.to.have.status(404));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/nominas/{{idInexistente}}" }
+        },
+        {
+          "name": "40 Buscar pyme por nombre inexistente - 404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('404 Not Found', () => pm.response.to.have.status(404));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/pymes/buscar?nombre=NoExiste" }
+        },
+        {
+          "name": "41 PUT pyme inexistente - 404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('404 Not Found', () => pm.response.to.have.status(404));"
+          ] } }],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"X\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/pymes/{{idInexistente}}"
+          }
+        },
+        {
+          "name": "42 Gasto con monto negativo - 400",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('mensaje montoTotal', () => pm.expect(pm.response.json().mensaje).to.include('montoTotal'));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"pymeId\": \"{{pymeId}}\",\n  \"montoTotal\": -50,\n  \"categoria\": \"OTROS\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/gastos"
+          }
+        },
+        {
+          "name": "43 Gasto con monto cero - 400",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"pymeId\": \"{{pymeId}}\",\n  \"montoTotal\": 0,\n  \"categoria\": \"OTROS\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/gastos"
+          }
+        },
+        {
+          "name": "44 Gasto con categoria NOMINA - 400",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('mensaje NOMINA', () => pm.expect(pm.response.json().mensaje).to.include('NOMINA'));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"pymeId\": \"{{pymeId}}\",\n  \"montoTotal\": 100,\n  \"categoria\": \"NOMINA\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/gastos"
+          }
+        },
+        {
+          "name": "45 Gasto con pyme inexistente - 404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('404 Not Found', () => pm.response.to.have.status(404));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"pymeId\": \"{{idInexistente}}\",\n  \"montoTotal\": 100,\n  \"categoria\": \"OTROS\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/gastos"
+          }
+        },
+        {
+          "name": "46 Pyme sin nombre - 400",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('mensaje nombre', () => pm.expect(pm.response.json().mensaje).to.include('nombre'));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ganancias\": 100\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/pymes"
+          }
+        },
+        {
+          "name": "47 Pyme con ganancias negativas - 400",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('mensaje ganancias', () => pm.expect(pm.response.json().mensaje).to.include('ganancias'));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Tienda X\",\n  \"ganancias\": -1\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/pymes"
+          }
+        },
+        {
+          "name": "48 Empleado con salario negativo - 400",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('mensaje salarioBase', () => pm.expect(pm.response.json().mensaje).to.include('salarioBase'));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Luis\",\n  \"documento\": 2222,\n  \"salarioBase\": -10,\n  \"pymeId\": \"{{pymeId}}\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/empleados"
+          }
+        },
+        {
+          "name": "49 Empleado con pyme inexistente - 404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('404 Not Found', () => pm.response.to.have.status(404));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Luis\",\n  \"documento\": 3333,\n  \"salarioBase\": 1000,\n  \"pymeId\": \"{{idInexistente}}\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/empleados"
+          }
+        },
+        {
+          "name": "50 Nomina con empleado inexistente - 404",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('404 Not Found', () => pm.response.to.have.status(404));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"empleadoId\": \"{{idInexistente}}\",\n  \"montoTotal\": 100\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/nominas"
+          }
+        },
+        {
+          "name": "51 Gasto con categoria inexistente - 400 (formato Spring)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"pymeId\": \"{{pymeId}}\",\n  \"montoTotal\": 100,\n  \"categoria\": \"COMIDA\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/gastos"
+          }
+        },
+        {
+          "name": "52 Id que no es UUID - 400 (formato Spring)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/pymes/no-es-un-uuid" }
+        }
+      ]
+    }
+  ]
+}

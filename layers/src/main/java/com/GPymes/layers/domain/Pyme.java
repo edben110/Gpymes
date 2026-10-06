@@ -1,37 +1,86 @@
-package main.java.com.GPymes.layers.domain;
+package com.GPymes.layers.domain;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-import com.hotel.Hotel.domain.empleado;
-
+@Entity
+@Table(name = "pymes")
 public class Pyme {
-    private final UUID id;
+
+    @Id
+    @Column(name = "id", nullable = false, updatable = false)
+    private UUID id;
+
+    @Column(name = "nombre", nullable = false, unique = true, length = 120)
     private String nombre;
-    private ArrayList<Empleado> empleados;
+
+    @Column(name = "ganancias")
     private Double ganancias;
 
-    public Pyme(String nombre){
-        if(nombre.isBlank() || nombre == null){
-            throw new IllegalArgumentException("El nombre no es valido ya que esta en blanco o es nulo") ;
+    @OneToMany(mappedBy = "pyme", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Empleado> empleados = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pyme", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Gasto> gastos = new ArrayList<>();
+
+    protected Pyme() {
+    }
+
+    public Pyme(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            throw new IllegalArgumentException("El nombre no es valido ya que esta en blanco o es nulo");
         }
-        this.id= UUID.randomUUID();
+        this.id = UUID.randomUUID();
         this.nombre = nombre;
     }
 
     public UUID getId() {
         return this.id;
     }
-    public ArrayList<Empleado> getEmpleados() {
+
+    public List<Empleado> getEmpleados() {
         return this.empleados;
     }
+
+    public List<Gasto> getGastos() {
+        return this.gastos;
+    }
+
     public Double getGanancias() {
         return this.ganancias;
     }
+
     public String getNombre() {
         return this.nombre;
     }
+
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public void setGanancias(Double ganancias) {
+        this.ganancias = ganancias;
+    }
+
+    public Double calcularTotalGastos(){
+        double total = 0;
+        for(Gasto g : this.gastos ){
+            total += g.getMontoTotal();
+        }
+        return total;
+    }
+    public String getTotalGastos(){
+        Double total= this.calcularTotalGastos();
+        double ganancias = this.ganancias == null ? 0 : this.ganancias;
+        return "El total de gastos es " + total + ((total < ganancias) ? " y es menor a las ganancias" : " y es mayor o igual a las ganancias, ojo");
     }
 }

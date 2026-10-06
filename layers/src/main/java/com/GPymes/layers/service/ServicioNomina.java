@@ -4,6 +4,7 @@ import com.GPymes.layers.domain.Empleado;
 import com.GPymes.layers.domain.Nomina;
 import com.GPymes.layers.dto.NominaRequestDTO;
 import com.GPymes.layers.dto.NominaResponseDTO;
+import com.GPymes.layers.exception.RecursoNoEncontradoException;
 import com.GPymes.layers.mapper.NominaMapper;
 import com.GPymes.layers.repository.RepositorioEmpleado;
 import com.GPymes.layers.repository.RepositorioNomina;
@@ -31,7 +32,7 @@ public class ServicioNomina {
     @Transactional
     public NominaResponseDTO crear(NominaRequestDTO request) {
         Empleado empleado = repositorioEmpleado.findById(request.empleadoId())
-                .orElseThrow(() -> new IllegalArgumentException("Empleado no encontrado con ID: " + request.empleadoId()));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Empleado no encontrado con ID: " + request.empleadoId()));
 
         // Invocacion a las invariantes del modelo de dominio rico:
         // el constructor valida el monto, fija la categoria NOMINA, enlaza el
@@ -53,7 +54,7 @@ public class ServicioNomina {
     @Transactional(readOnly = true)
     public NominaResponseDTO obtenerPorId(UUID id) {
         Nomina nomina = repositorioNomina.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Nomina no encontrada con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Nomina no encontrada con ID: " + id));
         return nominaMapper.toResponse(nomina);
     }
 

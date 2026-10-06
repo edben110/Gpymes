@@ -4,6 +4,7 @@ import com.GPymes.layers.domain.Empleado;
 import com.GPymes.layers.domain.Pyme;
 import com.GPymes.layers.dto.EmpleadoRequestDTO;
 import com.GPymes.layers.dto.EmpleadoResponseDTO;
+import com.GPymes.layers.exception.RecursoNoEncontradoException;
 import com.GPymes.layers.mapper.EmpleadoMapper;
 import com.GPymes.layers.repository.RepositorioEmpleado;
 import com.GPymes.layers.repository.RepositorioPyme;
@@ -31,7 +32,7 @@ public class ServicioEmpleado {
     @Transactional
     public EmpleadoResponseDTO crear(EmpleadoRequestDTO request) {
         Pyme pyme = repositorioPyme.findById(request.pymeId())
-                .orElseThrow(() -> new IllegalArgumentException("Pyme no encontrada con ID: " + request.pymeId()));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Pyme no encontrada con ID: " + request.pymeId()));
 
         Empleado empleado = empleadoMapper.toEntity(request);
         empleado.setPyme(pyme);
@@ -85,6 +86,6 @@ public class ServicioEmpleado {
 
     private Empleado buscarPorId(UUID id) {
         return repositorioEmpleado.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Empleado no encontrado con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Empleado no encontrado con ID: " + id));
     }
 }

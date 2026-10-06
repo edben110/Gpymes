@@ -80,6 +80,7 @@ public class Pyme {
     }
     public String getTotalGastos(){
         Double total= this.calcularTotalGastos();
+        double ganancias = this.ganancias == null ? 0 : this.ganancias;
         return "El total de gastos es " + total + ((total < ganancias) ? " y es menor a las ganancias" : " y es mayor o igual a las ganancias, ojo");
     }
 }

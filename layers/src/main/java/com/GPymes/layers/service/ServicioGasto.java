@@ -5,6 +5,7 @@ import com.GPymes.layers.domain.Gasto;
 import com.GPymes.layers.domain.Pyme;
 import com.GPymes.layers.dto.GastoRequestDTO;
 import com.GPymes.layers.dto.GastoResponseDTO;
+import com.GPymes.layers.exception.RecursoNoEncontradoException;
 import com.GPymes.layers.mapper.GastoMapper;
 import com.GPymes.layers.repository.RepositorioGasto;
 import com.GPymes.layers.repository.RepositorioPyme;
@@ -37,7 +38,7 @@ public class ServicioGasto {
         }
 
         Pyme pyme = repositorioPyme.findById(request.pymeId())
-                .orElseThrow(() -> new IllegalArgumentException("Pyme no encontrada con ID: " + request.pymeId()));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Pyme no encontrada con ID: " + request.pymeId()));
 
         Gasto gasto = new Gasto(request.montoTotal(), request.fechaPago(), request.categoria(), pyme);
         Gasto guardado = repositorioGasto.save(gasto);
@@ -56,7 +57,7 @@ public class ServicioGasto {
     @Transactional(readOnly = true)
     public GastoResponseDTO obtenerPorId(UUID id) {
         Gasto gasto = repositorioGasto.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Gasto no encontrado con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Gasto no encontrado con ID: " + id));
         return gastoMapper.toResponse(gasto);
     }
 

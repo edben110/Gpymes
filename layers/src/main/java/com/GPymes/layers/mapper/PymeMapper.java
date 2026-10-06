@@ -18,14 +18,16 @@ public class PymeMapper {
     }
 
     public Pyme toEntity(PymeRequestDTO dto) {
-        return new Pyme(dto.nombre());
+        Pyme pyme = new Pyme(dto.nombre());
+        pyme.setGanancias(dto.ganancias());
+        return pyme;
     }
 
     public PymeResponseDTO toResponse(Pyme pyme) {
         List<EmpleadoResponseDTO> empleados = pyme.getEmpleados() == null
                 ? List.of()
                 : pyme.getEmpleados().stream().map(empleadoMapper::toResponse).toList();
-        return new PymeResponseDTO(pyme.getId(), pyme.getNombre(), pyme.getGanancias(), empleados);
+        return new PymeResponseDTO(pyme.getId(), pyme.getNombre(), pyme.getGanancias(), pyme.calcularTotalGastos(), empleados);
     }
 
     public List<PymeResponseDTO> toResponseList(List<Pyme> pymes) {

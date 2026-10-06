@@ -7,6 +7,7 @@ public record PymeResponseDTO(
         UUID id,
         String nombre,
         Double ganancias,
+        Double totalGastos,
         List<EmpleadoResponseDTO> empleados
 ) {
 }

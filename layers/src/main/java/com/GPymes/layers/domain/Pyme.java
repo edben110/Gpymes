@@ -70,4 +70,16 @@ public class Pyme {
     public void setGanancias(Double ganancias) {
         this.ganancias = ganancias;
     }
+
+    public Double calcularTotalGastos(){
+        double total = 0;
+        for(Gasto g : this.gastos ){
+            total += g.getMontoTotal();
+        }
+        return total;
+    }
+    public String getTotalGastos(){
+        Double total= this.calcularTotalGastos();
+        return "El total de gastos es " + total + ((total < ganancias) ? " y es menor a las ganancias" : " y es mayor o igual a las ganancias, ojo");
+    }
 }

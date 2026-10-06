@@ -1,13 +1,39 @@
-package main.java.com.GPymes.layers.domain;
+package com.GPymes.layers.domain;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
-import com.GPymes.layers.domain.Empleado;
-import com.GPymes.layers.domain.Gasto;
-
+@Entity
 public class Nomina extends Gasto {
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empleado_id")
     private Empleado empleado;
+
+    @Column(name = "deducciones")
     private Double deducciones;
 
+    protected Nomina() {
+    }
+
+    public Nomina(Double montoTotal, LocalDateTime fechaPago, Empleado empleado, Double deducciones) {
+        super(montoTotal, fechaPago, CategoriasGasto.NOMINA);
+        if (empleado == null) {
+            throw new IllegalArgumentException("El empleado de la nomina no puede ser nulo");
+        }
+        this.empleado = empleado;
+        this.deducciones = deducciones == null ? 0.0 : deducciones;
+        empleado.getNominas().add(this);
+    }
+
+    public Empleado getEmpleado() {return this.empleado;}
+
+    public Double getDeducciones() {return this.deducciones;}
+
+    public void setDeducciones(Double deducciones) {this.deducciones = deducciones;}
 }

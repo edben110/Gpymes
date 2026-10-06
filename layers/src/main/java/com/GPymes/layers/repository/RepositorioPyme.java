@@ -1,5 +1,5 @@
-package main.java.com.GPymes.layers.repository;
-import main.java.com.GPymes.layers.domain.Pyme;
+package com.GPymes.layers.repository;
+import com.GPymes.layers.domain.Pyme;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;

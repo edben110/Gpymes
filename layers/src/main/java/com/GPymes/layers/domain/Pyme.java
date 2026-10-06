@@ -1,37 +1,68 @@
-package main.java.com.GPymes.layers.domain;
+package com.GPymes.layers.domain;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-import com.hotel.Hotel.domain.empleado;
-
+@Entity
+@Table(name = "pymes")
 public class Pyme {
-    private final UUID id;
+
+    @Id
+    @Column(name = "id", nullable = false, updatable = false)
+    private UUID id;
+
+    @Column(name = "nombre", nullable = false, length = 120)
     private String nombre;
-    private ArrayList<Empleado> empleados;
+
+    @Column(name = "ganancias")
     private Double ganancias;
 
-    public Pyme(String nombre){
-        if(nombre.isBlank() || nombre == null){
-            throw new IllegalArgumentException("El nombre no es valido ya que esta en blanco o es nulo") ;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "pyme_id")
+    private List<Empleado> empleados = new ArrayList<>();
+
+    protected Pyme() {
+    }
+
+    public Pyme(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            throw new IllegalArgumentException("El nombre no es valido ya que esta en blanco o es nulo");
         }
-        this.id= UUID.randomUUID();
+        this.id = UUID.randomUUID();
         this.nombre = nombre;
     }
 
     public UUID getId() {
         return this.id;
     }
-    public ArrayList<Empleado> getEmpleados() {
+
+    public List<Empleado> getEmpleados() {
         return this.empleados;
     }
+
     public Double getGanancias() {
         return this.ganancias;
     }
+
     public String getNombre() {
         return this.nombre;
     }
+
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public void setGanancias(Double ganancias) {
+        this.ganancias = ganancias;
     }
 }
